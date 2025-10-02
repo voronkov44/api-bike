@@ -2,10 +2,9 @@ package auth
 
 import (
 	"bike/configs"
+	"bike/pkg/req"
 	"bike/pkg/res"
-	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
@@ -27,20 +26,11 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var payload LoginRequest
-		err := json.NewDecoder(r.Body).Decode(&payload)
+		body, err := req.HandleBody[LoginRequest](&w, r)
 		if err != nil {
-			res.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		validate := validator.New()
-		err = validate.Struct(payload)
-		if err != nil {
-			res.Json(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		fmt.Println(payload)
+		fmt.Println(body)
 		data := LoginResponse{
 			Token: handler.Config.Auth.Secret,
 		}
@@ -50,6 +40,10 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Register")
+		body, err := req.HandleBody[RegisterRequest](&w, r)
+		if err != nil {
+			return
+		}
+		fmt.Println(body)
 	}
 }
