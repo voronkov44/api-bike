@@ -5,6 +5,7 @@ import (
 	"bike/pkg/res"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
@@ -32,10 +33,13 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 			res.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if payload.Email == "" || payload.Password == "" {
-			res.Json(w, "Email or Password is empty", http.StatusBadRequest)
+		validate := validator.New()
+		err = validate.Struct(payload)
+		if err != nil {
+			res.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
 		fmt.Println(payload)
 		data := LoginResponse{
 			Token: handler.Config.Auth.Secret,
