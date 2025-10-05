@@ -5,6 +5,7 @@ import (
 	"bike/internal/auth"
 	"bike/internal/products"
 	"bike/pkg/db"
+	"bike/pkg/middleware"
 	"fmt"
 	"net/http"
 )
@@ -29,9 +30,15 @@ func main() {
 		ProductService:    productService,
 	})
 
+	// Middlewares
+	stack := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: stack(router),
 	}
 
 	fmt.Println("Server listening on :8081")

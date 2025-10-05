@@ -1,6 +1,7 @@
 package products
 
 import (
+	"bike/pkg/middleware"
 	"bike/pkg/req"
 	"bike/pkg/res"
 	"errors"
@@ -26,7 +27,7 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	router.HandleFunc("POST /products", handler.Create())
 	router.HandleFunc("GET /products", handler.GetAll())
 	router.HandleFunc("GET /products/{slug}", handler.GoTo())
-	router.HandleFunc("PATCH /products/{slug}", handler.Update())
+	router.Handle("PATCH /products/{slug}", middleware.IsAuthenticated(handler.Update()))
 	router.HandleFunc("DELETE /products/{slug}", handler.Delete())
 
 	router.HandleFunc("POST /products/{slug}/change", handler.Change())

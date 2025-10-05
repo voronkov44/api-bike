@@ -2,6 +2,7 @@ package main
 
 import (
 	"bike/internal/products"
+	"bike/internal/users"
 	"fmt"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -18,6 +19,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&products.Product{})
+	db.AutoMigrate(&products.Product{}, &users.User{})
 	fmt.Println("Database migrated")
 }
