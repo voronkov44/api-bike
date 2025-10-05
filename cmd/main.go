@@ -11,15 +11,22 @@ import (
 
 func main() {
 	conf := configs.LoadConfig()
-	_ = db.NewDb(conf)
+	database := db.NewDb(conf)
 	router := http.NewServeMux()
+
+	// Repositories
+	productRepository := products.NewProductRepository(database)
+
+	// Service
+	productService := products.NewProductService(productRepository)
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
 	})
 	products.NewProductHandler(router, products.ProductHandlerDeps{
-		Config: conf,
+		ProductRepository: productRepository,
+		ProductService:    productService,
 	})
 
 	server := http.Server{

@@ -1,22 +1,27 @@
 package products
 
 import (
-	"bike/configs"
+	"bike/pkg/req"
+	"bike/pkg/res"
+	"errors"
 	"fmt"
 	"net/http"
 )
 
 type ProductHandlerDeps struct {
-	*configs.Config
+	ProductRepository *ProductRepository
+	ProductService    ProductService
 }
 
 type ProductHandler struct {
-	*configs.Config
+	ProductRepository *ProductRepository
+	service           ProductService
 }
 
 func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	handler := &ProductHandler{
-		Config: deps.Config,
+		ProductRepository: deps.ProductRepository,
+		service:           deps.ProductService,
 	}
 	router.HandleFunc("POST /products", handler.Create())
 	router.HandleFunc("GET /products", handler.GetAll())
@@ -27,7 +32,23 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Create")
+		body, err := req.HandleBody[ProductCreateRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		created, err := handler.service.CreateProduct(r.Context(), *body)
+		if err != nil {
+			// Маппим доменные ошибки в HTTP
+			if errors.Is(err, ErrValidation) {
+				res.Json(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+				return
+			}
+			// По умолчанию считаем это 500
+			res.Json(w, map[string]string{"error": "failed to create product"}, http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, created, http.StatusCreated)
 	}
 }
 
@@ -54,7 +75,8 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 
 func (handler *ProductHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Delete")
+		id := r.PathValue("id")
+		fmt.Println(id)
 
 	}
 }
