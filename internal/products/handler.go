@@ -4,8 +4,8 @@ import (
 	"bike/pkg/req"
 	"bike/pkg/res"
 	"errors"
-	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type ProductHandlerDeps struct {
@@ -25,9 +25,11 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	}
 	router.HandleFunc("POST /products", handler.Create())
 	router.HandleFunc("GET /products", handler.GetAll())
-	router.HandleFunc("GET /products/{id}", handler.GoTo())
-	router.HandleFunc("PATCH /products/{id}", handler.Update())
-	router.HandleFunc("DELETE /products/{id}", handler.Delete())
+	router.HandleFunc("GET /products/{slug}", handler.GoTo())
+	router.HandleFunc("PATCH /products/{slug}", handler.Update())
+	router.HandleFunc("DELETE /products/{slug}", handler.Delete())
+
+	router.HandleFunc("POST /products/{slug}/change", handler.Change())
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
@@ -37,7 +39,7 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		created, err := handler.service.CreateProduct(r.Context(), *body)
+		created, err := handler.service.Create(r.Context(), *body)
 		if err != nil {
 			// Маппим доменные ошибки в HTTP
 			if errors.Is(err, ErrValidation) {
@@ -52,31 +54,135 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 	}
 }
 
+// GET /products?limit=&offset=
+
 func (handler *ProductHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("GETAll")
+		q := r.URL.Query()
+		limit, offset := 0, 0
+		if v := q.Get("limit"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+				limit = n
+			} else {
+				res.Json(w, map[string]string{"error": "invalid limit"}, http.StatusBadRequest)
+				return
+			}
+		}
+		if v := q.Get("offset"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+				offset = n
+			} else {
+				res.Json(w, map[string]string{"error": "invalid offset"}, http.StatusBadRequest)
+				return
+			}
+		}
 
+		list, err := handler.service.GetAll(r.Context(), limit, offset)
+		if err != nil {
+			res.Json(w, map[string]string{"error": "failed to list products"}, http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, list, http.StatusOK)
 	}
 }
 
 func (handler *ProductHandler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("GoTo")
+		sl := r.PathValue("slug")
+		if sl == "" {
+			res.Json(w, map[string]string{"error": "invalid slug"}, http.StatusBadRequest)
+			return
+		}
 
+		p, err := handler.service.GoTo(r.Context(), sl)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				res.Json(w, map[string]string{"error": "product not found"}, http.StatusNotFound)
+				return
+			}
+			res.Json(w, map[string]string{"error": "failed to get product"}, http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, p, http.StatusOK)
 	}
 }
 
 func (handler *ProductHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Update")
+		sl := r.PathValue("slug")
+		if sl == "" {
+			res.Json(w, map[string]string{"error": "invalid slug"}, http.StatusBadRequest)
+			return
+		}
 
+		body, err := req.HandleBody[ProductUpdateRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		updated, err := handler.service.Update(r.Context(), sl, *body)
+		switch {
+		case errors.Is(err, ErrValidation):
+			res.Json(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+			return
+		case errors.Is(err, ErrNotFound):
+			res.Json(w, map[string]string{"error": "product not found"}, http.StatusNotFound)
+			return
+		case err != nil:
+			res.Json(w, map[string]string{"error": "failed to update product"}, http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, updated, http.StatusOK)
 	}
 }
 
 func (handler *ProductHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		fmt.Println(id)
+		sl := r.PathValue("slug")
+		if sl == "" {
+			res.Json(w, map[string]string{"error": "invalid slug"}, http.StatusBadRequest)
+			return
+		}
 
+		if err := handler.service.Delete(r.Context(), sl); err != nil {
+			if errors.Is(err, ErrNotFound) {
+				res.Json(w, map[string]string{"error": "product not found"}, http.StatusNotFound)
+				return
+			}
+			res.Json(w, map[string]string{"error": "failed to delete product"}, http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// ручка смены слага: POST /products/{slug}/change  { "slug": "новый слаг" }
+
+func (handler *ProductHandler) Change() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cur := r.PathValue("slug")
+		if cur == "" {
+			res.Json(w, map[string]string{"error": "invalid slug"}, http.StatusBadRequest)
+			return
+		}
+
+		body, err := req.HandleBody[ProductSlugUpdateRequest](&w, r)
+		if err != nil {
+			return
+		}
+
+		updated, err := handler.service.ChangeSlug(r.Context(), cur, body.Slug)
+		switch {
+		case errors.Is(err, ErrValidation):
+			res.Json(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+			return
+		case errors.Is(err, ErrNotFound):
+			res.Json(w, map[string]string{"error": "product not found"}, http.StatusNotFound)
+			return
+		case err != nil:
+			res.Json(w, map[string]string{"error": "failed to change slug"}, http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, updated, http.StatusOK)
 	}
 }
