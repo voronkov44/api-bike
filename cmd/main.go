@@ -4,6 +4,7 @@ import (
 	"bike/configs"
 	"bike/internal/auth"
 	"bike/internal/products"
+	"bike/internal/users"
 	"bike/pkg/db"
 	"bike/pkg/middleware"
 	"fmt"
@@ -17,13 +18,16 @@ func main() {
 
 	// Repositories
 	productRepository := products.NewProductRepository(database)
+	userRepository := users.NewUserRepository(database)
 
-	// Service
+	// Services
 	productService := products.NewProductService(productRepository)
+	authService := auth.NewAuthService(userRepository)
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
+		AuthService: authService,
 	})
 	products.NewProductHandler(router, products.ProductHandlerDeps{
 		ProductRepository: productRepository,
