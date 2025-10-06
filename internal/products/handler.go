@@ -6,7 +6,6 @@ import (
 	"bike/pkg/req"
 	"bike/pkg/res"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -119,10 +118,11 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
-		if ok {
-			fmt.Println(email)
-		}
+		//Вывод почты в консоль
+		//email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
+		//if ok {
+		//	fmt.Println(email)
+		//}
 		body, err := req.HandleBody[ProductUpdateRequest](&w, r)
 		if err != nil {
 			return

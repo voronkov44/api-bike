@@ -32,9 +32,12 @@ func IsAuthenticated(next http.Handler, config *configs.Config) http.Handler {
 			writeUnauthed(w)
 			return
 		}
-		r.Context()
 		ctx := context.WithValue(r.Context(), ContextEmailKey, data.Email)
 		req := r.WithContext(ctx)
+		if ww, ok := w.(*WrapperWriter); ok {
+			ww.SetEmail(data.Email)
+		}
+		
 		next.ServeHTTP(w, req)
 	})
 }
