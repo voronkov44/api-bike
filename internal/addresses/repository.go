@@ -43,7 +43,6 @@ func (r *AddressRepository) FindByID(id uint) (*Address, error) {
 }
 
 func (r *AddressRepository) Update(a *Address) (*Address, error) {
-	// Save will update all fields; if you prefer partial updates use Updates(map)
 	result := r.database.DB.Save(a)
 	if result.Error != nil {
 		return nil, result.Error
@@ -56,7 +55,7 @@ func (r *AddressRepository) DeleteByID(id uint) error {
 	return result.Error
 }
 
-// Доп. хелпер: приводим Address -> AddressResponse
+// ToResponse helpers func
 func ToResponse(a *Address) AddressResponse {
 	created := ""
 	if !a.CreatedAt.IsZero() {

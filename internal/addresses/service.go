@@ -53,22 +53,6 @@ func (s *AddressService) ListAddress(ctx context.Context, userEmail string) ([]A
 	return s.repo.ListByUserID(user.ID)
 }
 
-// GetAddress возвращает конкретный адрес, проверяя, что он принадлежит пользователю.
-func (s *AddressService) GetAddress(ctx context.Context, userEmail string, id uint) (*Address, error) {
-	user, err := s.userRepo.FindByEmail(userEmail)
-	if err != nil {
-		return nil, err
-	}
-	addr, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, ErrAddressNotFound
-	}
-	if addr.UserID != user.ID {
-		return nil, ErrForbidden
-	}
-	return addr, nil
-}
-
 // UpdateAddress обновляет поля адреса, только если он принадлежит пользователю.
 func (s *AddressService) UpdateAddress(ctx context.Context, userEmail string, id uint, in AddressUpdateRequest) (*Address, error) {
 	user, err := s.userRepo.FindByEmail(userEmail)
