@@ -28,7 +28,7 @@ func (w *WrapperWriter) SetEmail(email string) {
 // Email возвращает записанный email (или пустую строку)
 func (w *WrapperWriter) Email() string {
 	if w.userEmail == "" {
-		return "email = Unauthorized"
+		return "Unauthorized"
 	}
-	return "email = " + w.userEmail
+	return w.userEmail
 }
