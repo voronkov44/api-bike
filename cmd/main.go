@@ -33,15 +33,19 @@ func main() {
 		AuthService: authService,
 	})
 	products.NewProductHandler(router, products.ProductHandlerDeps{
+		Config:            conf,
 		ProductRepository: productRepository,
 		ProductService:    productService,
-		Config:            conf,
 	})
 	addresses.NewAddressHandler(router, addresses.AddressHandlerDeps{
+		Config:            conf,
 		AddressRepository: addressRepository,
 		AddressService:    addressService,
 		UserRepository:    userRepository,
-		Config:            conf,
+	})
+	users.NewUsersHandler(router, users.UserHandlerDeps{
+		Config:         conf,
+		UserRepository: userRepository,
 	})
 
 	// Middlewares
