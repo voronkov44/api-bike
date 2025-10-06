@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bike/internal/addresses"
 	"bike/internal/products"
 	"bike/internal/users"
 	"fmt"
@@ -19,6 +20,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&products.Product{}, &users.User{})
+	db.AutoMigrate(&products.Product{}, &users.User{}, &addresses.Address{})
 	fmt.Println("Database migrated")
 }

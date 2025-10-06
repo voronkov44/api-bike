@@ -2,6 +2,7 @@ package main
 
 import (
 	"bike/configs"
+	"bike/internal/addresses"
 	"bike/internal/auth"
 	"bike/internal/products"
 	"bike/internal/users"
@@ -19,10 +20,12 @@ func main() {
 	// Repositories
 	productRepository := products.NewProductRepository(database)
 	userRepository := users.NewUserRepository(database)
+	addressRepository := addresses.NewAddressRepository(database)
 
 	// Services
 	productService := products.NewProductService(productRepository)
 	authService := auth.NewAuthService(userRepository)
+	addressService := addresses.NewAddressService(addressRepository, userRepository)
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
@@ -32,6 +35,12 @@ func main() {
 	products.NewProductHandler(router, products.ProductHandlerDeps{
 		ProductRepository: productRepository,
 		ProductService:    productService,
+		Config:            conf,
+	})
+	addresses.NewAddressHandler(router, addresses.AddressHandlerDeps{
+		AddressRepository: addressRepository,
+		AddressService:    addressService,
+		UserRepository:    userRepository,
 		Config:            conf,
 	})
 
