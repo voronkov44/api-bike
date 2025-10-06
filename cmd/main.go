@@ -32,6 +32,7 @@ func main() {
 	products.NewProductHandler(router, products.ProductHandlerDeps{
 		ProductRepository: productRepository,
 		ProductService:    productService,
+		Config:            conf,
 	})
 
 	// Middlewares

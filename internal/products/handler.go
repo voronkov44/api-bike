@@ -1,10 +1,12 @@
 package products
 
 import (
+	"bike/configs"
 	"bike/pkg/middleware"
 	"bike/pkg/req"
 	"bike/pkg/res"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -12,6 +14,7 @@ import (
 type ProductHandlerDeps struct {
 	ProductRepository *ProductRepository
 	ProductService    ProductService
+	Config            *configs.Config
 }
 
 type ProductHandler struct {
@@ -27,7 +30,7 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	router.HandleFunc("POST /products", handler.Create())
 	router.HandleFunc("GET /products", handler.GetAll())
 	router.HandleFunc("GET /products/{slug}", handler.GoTo())
-	router.Handle("PATCH /products/{slug}", middleware.IsAuthenticated(handler.Update()))
+	router.Handle("PATCH /products/{slug}", middleware.IsAuthenticated(handler.Update(), deps.Config))
 	router.HandleFunc("DELETE /products/{slug}", handler.Delete())
 
 	router.HandleFunc("POST /products/{slug}/change", handler.Change())
@@ -116,6 +119,10 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
+		email, ok := r.Context().Value(middleware.ContextEmailKey).(string)
+		if ok {
+			fmt.Println(email)
+		}
 		body, err := req.HandleBody[ProductUpdateRequest](&w, r)
 		if err != nil {
 			return
