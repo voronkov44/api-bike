@@ -2,6 +2,7 @@ package addresses
 
 import (
 	"bike/pkg/db"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -53,6 +54,42 @@ func (r *AddressRepository) Update(a *Address) (*Address, error) {
 func (r *AddressRepository) DeleteByID(id uint) error {
 	result := r.database.DB.Delete(&Address{}, id)
 	return result.Error
+}
+
+func (r *AddressRepository) ListAll(userID uint, city, street, phone, label string, limit, offset int) (items []Address, total int64, err error) {
+	dbq := r.database.DB.Model(&Address{})
+
+	if userID != 0 {
+		dbq = dbq.Where("user_id = ?", userID)
+	}
+	if city != "" {
+		dbq = dbq.Where("city ILIKE ?", "%"+city+"%")
+	}
+	if street != "" {
+		dbq = dbq.Where("street ILIKE ?", "%"+street+"%")
+	}
+	if phone != "" {
+		dbq = dbq.Where("phone ILIKE ?", "%"+phone+"%")
+	}
+	if label != "" {
+		dbq = dbq.Where("label = ?", label)
+	}
+
+	// count total
+	if err = dbq.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// fetch with pagination
+	result := dbq.Order("created_at desc").Limit(limit).Offset(offset).Find(&items)
+	if result.Error != nil {
+		// если нет записей — возвращаем пустой слайс
+		if result.Error == gorm.ErrRecordNotFound {
+			return []Address{}, total, nil
+		}
+		return nil, 0, result.Error
+	}
+	return items, total, nil
 }
 
 // ToResponse helpers func

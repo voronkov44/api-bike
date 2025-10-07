@@ -3,6 +3,7 @@ package addresses
 import (
 	"context"
 	"errors"
+	"math"
 
 	"bike/internal/users"
 )
@@ -110,4 +111,25 @@ func (s *AddressService) DeleteAddress(ctx context.Context, userEmail string, id
 		return ErrForbidden
 	}
 	return s.repo.DeleteByID(id)
+}
+
+func (s *AddressService) ListAllAdmin(ctx context.Context, userID uint, city, street, phone, label string, page, limit int) (items []Address, total int64, totalPages int, err error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	items, total, err = s.repo.ListAll(userID, city, street, phone, label, limit, offset)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	if total == 0 {
+		totalPages = 0
+	} else {
+		totalPages = int(math.Ceil(float64(total) / float64(limit)))
+	}
+	return items, total, totalPages, nil
 }
