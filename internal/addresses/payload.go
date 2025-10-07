@@ -1,25 +1,25 @@
 package addresses
 
 type AddressCreateRequest struct {
-	Label     string `json:"label" validate:"required"`
-	Apartment string `json:"apartment,omitempty"`
-	Floor     string `json:"floor,omitempty"`
-	Entrance  string `json:"entrance,omitempty"`
-	Street    string `json:"street" validate:"required"`
-	City      string `json:"city" validate:"required"`
-	Phone     string `json:"phone,omitempty" validate:"required"`
-	Comment   string `json:"comment,omitempty"`
+	Label     string `json:"label" validate:"required" example:"home"`
+	Apartment string `json:"apartment,omitempty" example:"277"`
+	Floor     string `json:"floor,omitempty" example:"3"`
+	Entrance  string `json:"entrance,omitempty" example:"1"`
+	Street    string `json:"street" validate:"required" example:"Lenina 10"`
+	City      string `json:"city" validate:"required" example:"Moscow"`
+	Phone     string `json:"phone,omitempty" validate:"required" example:"+7 800 555 35 55"`
+	Comment   string `json:"comment,omitempty" example:"Легче позвонить, чем у кого то занимать"`
 }
 
 type AddressUpdateRequest struct {
-	Label     *string `json:"label,omitempty"`
-	Apartment *string `json:"apartment,omitempty"`
-	Floor     *string `json:"floor,omitempty"`
-	Entrance  *string `json:"entrance,omitempty"`
-	Street    *string `json:"street,omitempty"`
-	City      *string `json:"city,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-	Comment   *string `json:"comment,omitempty"`
+	Label     *string `json:"label,omitempty" example:"work"`
+	Apartment *string `json:"apartment,omitempty" example:"33"`
+	Floor     *string `json:"floor,omitempty" example:"27"`
+	Entrance  *string `json:"entrance,omitempty" example:"A"`
+	Street    *string `json:"street,omitempty" example:"Pushkina 5"`
+	City      *string `json:"city,omitempty" example:"Saint-Petersburg"`
+	Phone     *string `json:"phone,omitempty" example:"+7 952 812 52 52"`
+	Comment   *string `json:"comment,omitempty" example:"Не работает домофон"`
 }
 
 type AddressResponse struct {

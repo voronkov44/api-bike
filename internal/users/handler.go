@@ -52,7 +52,18 @@ func toUserResponse(u *User) UserResponse {
 	}
 }
 
-// GetAll - возвращает пользователей с пагинацией, сортировкой и фильтрацией
+// GetAll godoc
+// @Summary Получить всех пользователей (админ)
+// @Description Возвращает пользователей с пагинацией и фильтрацией
+// @Tags users,admin
+// @Produce json
+// @Param page query int false "page" default(1)
+// @Param limit query int false "limit" default(10)
+// @Param name query string false "filter by name"
+// @Param email query string false "filter by email"
+// @Success 200 {object} users.UserListResponse
+// @Failure 500 {object} map[string]string
+// @Router /users [get]
 func (handler *UserHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Параметры пагинации
@@ -115,7 +126,15 @@ func (handler *UserHandler) GetAll() http.HandlerFunc {
 	}
 }
 
-// GetByID - возвращает пользователя по id
+// GetByID godoc
+// @Summary Получить пользователя по ID (админ)
+// @Tags users,admin
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Success 200 {object} users.UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /users/{id} [get]
 func (handler *UserHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
@@ -140,7 +159,15 @@ func (handler *UserHandler) GetByID() http.HandlerFunc {
 
 }
 
-// GetJWTForUser - возвращает jwt-token пользователя
+// GetJWTForUser godoc
+// @Summary Возвращает jwt-token для пользователя по ID (админ)
+// @Tags users,admin
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /users/jwt/{id} [get]
 func (handler *UserHandler) GetJWTForUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
@@ -172,7 +199,15 @@ func (handler *UserHandler) GetJWTForUser() http.HandlerFunc {
 	}
 }
 
-// SearchUsers - поиск пользователей по email
+// SearchUsers godoc
+// @Summary Поиск пользователей по email (админ)
+// @Tags users,admin
+// @Produce json
+// @Param email query string true "email"
+// @Success 200 {array} users.UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/search [get]
 func (handler *UserHandler) SearchUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.URL.Query().Get("email")

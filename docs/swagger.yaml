@@ -1,0 +1,896 @@
+basePath: /
+definitions:
+  addresses.AddressCreateRequest:
+    properties:
+      apartment:
+        example: "277"
+        type: string
+      city:
+        example: Moscow
+        type: string
+      comment:
+        example: Легче позвонить, чем у кого то занимать
+        type: string
+      entrance:
+        example: "1"
+        type: string
+      floor:
+        example: "3"
+        type: string
+      label:
+        example: home
+        type: string
+      phone:
+        example: +7 800 555 35 55
+        type: string
+      street:
+        example: Lenina 10
+        type: string
+    required:
+    - city
+    - label
+    - phone
+    - street
+    type: object
+  addresses.AddressResponse:
+    properties:
+      apartment:
+        type: string
+      city:
+        type: string
+      comment:
+        type: string
+      created_at:
+        type: string
+      entrance:
+        type: string
+      floor:
+        type: string
+      id:
+        type: integer
+      label:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  addresses.AddressUpdateRequest:
+    properties:
+      apartment:
+        example: "33"
+        type: string
+      city:
+        example: Saint-Petersburg
+        type: string
+      comment:
+        example: Не работает домофон
+        type: string
+      entrance:
+        example: A
+        type: string
+      floor:
+        example: "27"
+        type: string
+      label:
+        example: work
+        type: string
+      phone:
+        example: +7 952 812 52 52
+        type: string
+      street:
+        example: Pushkina 5
+        type: string
+    type: object
+  addresses.AdminAddressesResponse:
+    properties:
+      addresses:
+        items:
+          $ref: '#/definitions/addresses.AddressResponse'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        example: email@example.com
+        type: string
+      password:
+        example: secret
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOi...
+        type: string
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        example: email@example.com
+        type: string
+      name:
+        example: Ivan
+        type: string
+      password:
+        example: secret
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  auth.RegisterResponse:
+    properties:
+      token:
+        example: eyJhbGciOi...
+        type: string
+    type: object
+  products.Product:
+    properties:
+      image:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+      rating:
+        type: number
+      slug:
+        type: string
+      type:
+        type: string
+    type: object
+  products.ProductCreateRequest:
+    properties:
+      image:
+        example: https://example.com/image.jpg
+        type: string
+      ingredients:
+        example:
+        - '["томатный соус"'
+        - '"моцарелла"'
+        - '"помидоры"'
+        - '"базилик"]'
+        items:
+          type: string
+        type: array
+      name:
+        example: Маргарита
+        minLength: 1
+        type: string
+      price:
+        example: 499
+        type: integer
+      rating:
+        example: 4.5
+        maximum: 5
+        minimum: 0
+        type: number
+      tags:
+        example:
+        - '["italian"'
+        - '"popular"]'
+        items:
+          type: string
+        type: array
+      type:
+        example: pizza
+        maxLength: 64
+        type: string
+    required:
+    - name
+    - price
+    - tags
+    type: object
+  products.ProductSlugUpdateRequest:
+    properties:
+      slug:
+        example: margarita-2025
+        minLength: 1
+        type: string
+    required:
+    - slug
+    type: object
+  products.ProductUpdateRequest:
+    properties:
+      image:
+        type: string
+      ingredients:
+        items:
+          type: string
+        type: array
+      name:
+        minLength: 1
+        type: string
+      price:
+        type: integer
+      rating:
+        maximum: 5
+        minimum: 0
+        type: number
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        maxLength: 64
+        type: string
+    required:
+    - tags
+    type: object
+  users.UserListResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/users.UserResponse'
+        type: array
+    type: object
+  users.UserResponse:
+    properties:
+      created_at:
+        example: "2025-10-07T12:00:00Z"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: John Doe
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: voronkovworkemail@gmail.com
+    name: Andrew Voronkov
+  description: API — сервис для управления пользователями и продуктами для проекта
+    bike.
+  title: API-Bike
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя по email и паролю
+      parameters:
+      - description: Данные для авторизации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Авторизация пользователя
+      tags:
+      - auth
+      - open
+      - user
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя и возвращает JWT
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - auth
+      - open
+      - user
+  /products:
+    get:
+      description: Возвращает список продуктов (пагинация через limit/offset)
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/products.Product'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Список продуктов
+      tags:
+      - products
+      - open
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новый продукт
+      parameters:
+      - description: Product data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/products.ProductCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/products.Product'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать продукт (админ)
+      tags:
+      - products
+      - admin
+  /products/{slug}:
+    delete:
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить продукт (админ)
+      tags:
+      - products
+      - admin
+    get:
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.Product'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить блюдо по slug, переход на конкретное блюдо
+      tags:
+      - products
+      - open
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/products.ProductUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.Product'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить продукт (админ)
+      tags:
+      - products
+      - admin
+  /products/{slug}/change:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: current slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: new slug
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/products.ProductSlugUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.Product'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Сменить slug продукта (админ)
+      tags:
+      - products
+      - admin
+  /user/address:
+    get:
+      description: Возвращает адреса текущего авторизованного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/addresses.AddressResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Список адресов пользователя
+      tags:
+      - addresses
+      - jwt
+      - user
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новый адрес для текущего авторизованного пользователя
+      parameters:
+      - description: Данные адреса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/addresses.AddressCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/addresses.AddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать адрес
+      tags:
+      - addresses
+      - jwt
+      - user
+  /user/address/{id}:
+    delete:
+      description: Удаляет адрес (только владелец)
+      parameters:
+      - description: ID адреса
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить адрес
+      tags:
+      - addresses
+      - jwt
+      - user
+    patch:
+      consumes:
+      - application/json
+      description: Частичное обновление адреса (PATCH) — только владелец
+      parameters:
+      - description: ID адреса
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/addresses.AddressUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/addresses.AddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить адрес
+      tags:
+      - addresses
+      - jwt
+      - user
+  /user/adminaddress:
+    get:
+      description: Возвращает список адресов c фильтрами (для админов)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by user id
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by city
+        in: query
+        name: city
+        type: string
+      - description: Filter by street
+        in: query
+        name: street
+        type: string
+      - description: Filter by phone
+        in: query
+        name: phone
+        type: string
+      - description: Filter by label
+        in: query
+        name: label
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/addresses.AdminAddressesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Список адресов (админ)
+      tags:
+      - addresses
+      - admin
+  /users:
+    get:
+      description: Возвращает пользователей с пагинацией и фильтрацией
+      parameters:
+      - default: 1
+        description: page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: filter by name
+        in: query
+        name: name
+        type: string
+      - description: filter by email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить всех пользователей (админ)
+      tags:
+      - users
+      - admin
+  /users/{id}:
+    get:
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить пользователя по ID (админ)
+      tags:
+      - users
+      - admin
+  /users/jwt/{id}:
+    get:
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Возвращает jwt-token для пользователя по ID (админ)
+      tags:
+      - users
+      - admin
+  /users/search:
+    get:
+      parameters:
+      - description: email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/users.UserResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Поиск пользователей по email (админ)
+      tags:
+      - users
+      - admin
+swagger: "2.0"

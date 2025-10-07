@@ -2,7 +2,6 @@ package products
 
 import (
 	"bike/configs"
-	"bike/pkg/middleware"
 	"bike/pkg/req"
 	"bike/pkg/res"
 	"errors"
@@ -29,12 +28,23 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	router.HandleFunc("POST /products", handler.Create())
 	router.HandleFunc("GET /products", handler.GetAll())
 	router.HandleFunc("GET /products/{slug}", handler.GoTo())
-	router.Handle("PATCH /products/{slug}", middleware.IsAuthenticated(handler.Update(), deps.Config))
+	router.Handle("PATCH /products/{slug}", handler.Update())
 	router.HandleFunc("DELETE /products/{slug}", handler.Delete())
 
 	router.HandleFunc("POST /products/{slug}/change", handler.Change())
 }
 
+// Create godoc
+// @Summary Создать продукт (админ)
+// @Description Создаёт новый продукт
+// @Tags products,admin
+// @Accept json
+// @Produce json
+// @Param request body products.ProductCreateRequest true "Product data"
+// @Success 201 {object} products.Product
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products [post]
 func (handler *ProductHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[ProductCreateRequest](&w, r)
@@ -57,8 +67,17 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 	}
 }
 
-// GET /products?limit=&offset=
-
+// GetAll godoc
+// @Summary Список продуктов
+// @Description Возвращает список продуктов (пагинация через limit/offset)
+// @Tags products,open
+// @Produce json
+// @Param limit query int false "limit"
+// @Param offset query int false "offset"
+// @Success 200 {array} products.Product
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products [get]
 func (handler *ProductHandler) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -89,6 +108,15 @@ func (handler *ProductHandler) GetAll() http.HandlerFunc {
 	}
 }
 
+// GoTo godoc
+// @Summary Получить блюдо по slug, переход на конкретное блюдо
+// @Tags products,open
+// @Produce json
+// @Param slug path string true "slug"
+// @Success 200 {object} products.Product
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /products/{slug} [get]
 func (handler *ProductHandler) GoTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sl := r.PathValue("slug")
@@ -110,6 +138,17 @@ func (handler *ProductHandler) GoTo() http.HandlerFunc {
 	}
 }
 
+// Update godoc
+// @Summary Обновить продукт (админ)
+// @Tags products,admin
+// @Accept json
+// @Produce json
+// @Param slug path string true "slug"
+// @Param request body products.ProductUpdateRequest true "Fields to update"
+// @Success 200 {object} products.Product
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /products/{slug} [patch]
 func (handler *ProductHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sl := r.PathValue("slug")
@@ -144,6 +183,13 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Удалить продукт (админ)
+// @Tags products,admin
+// @Param slug path string true "slug"
+// @Success 204
+// @Failure 404 {object} map[string]string
+// @Router /products/{slug} [delete]
 func (handler *ProductHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sl := r.PathValue("slug")
@@ -164,8 +210,17 @@ func (handler *ProductHandler) Delete() http.HandlerFunc {
 	}
 }
 
-// ручка смены слага: POST /products/{slug}/change  { "slug": "новый слаг" }
-
+// Change godoc
+// @Summary Сменить slug продукта (админ)
+// @Tags products,admin
+// @Accept json
+// @Produce json
+// @Param slug path string true "current slug"
+// @Param request body products.ProductSlugUpdateRequest true "new slug"
+// @Success 200 {object} products.Product
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /products/{slug}/change [post]
 func (handler *ProductHandler) Change() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cur := r.PathValue("slug")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bike/configs"
+	_ "bike/docs"
 	"bike/internal/addresses"
 	"bike/internal/auth"
 	"bike/internal/products"
@@ -9,9 +10,17 @@ import (
 	"bike/pkg/db"
 	"bike/pkg/middleware"
 	"fmt"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
+// @title API-Bike
+// @version 1.0
+// @description API — сервис для управления пользователями и продуктами для проекта bike.
+// @contact.name Andrew Voronkov
+// @contact.email voronkovworkemail@gmail.com
+// @host localhost:8081
+// @BasePath /
 func main() {
 	conf := configs.LoadConfig()
 	database := db.NewDb(conf)
@@ -47,6 +56,9 @@ func main() {
 		Config:         conf,
 		UserRepository: userRepository,
 	})
+
+	// Swagger UI
+	router.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// Middlewares
 	stack := middleware.Chain(

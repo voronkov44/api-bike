@@ -1,0 +1,6 @@
+Server listening on :8081
+2025/10/07 20:49:50 | email=Unauthorized | 200 GET /users                         |   37.95ms
+2025/10/07 20:51:07 | email=Unauthorized | 200 GET /users                         |    3.49ms
+2025/10/07 20:52:04 | email=Unauthorized | 200 GET /users                         |    3.33ms
+2025/10/07 20:52:25 | email=Unauthorized | 200 GET /users                         |    4.28ms
+2025/10/07 20:53:56 | email=Unauthorized | 200 GET /users                         |    5.82ms

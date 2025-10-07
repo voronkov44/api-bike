@@ -38,6 +38,18 @@ func NewAddressHandler(router *http.ServeMux, deps AddressHandlerDeps) {
 	router.HandleFunc("GET /user/adminaddress", handler.AdminListAll())
 }
 
+// Create godoc
+// @Summary Создать адрес
+// @Description Добавляет новый адрес для текущего авторизованного пользователя
+// @Tags addresses,jwt,user
+// @Accept json
+// @Produce json
+// @Param request body addresses.AddressCreateRequest true "Данные адреса"
+// @Success 201 {object} addresses.AddressResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /user/address [post]
 func (handler *AddressHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := req.HandleBody[AddressCreateRequest](&w, r)
@@ -56,6 +68,15 @@ func (handler *AddressHandler) Create() http.HandlerFunc {
 
 }
 
+// GetAllForUser godoc
+// @Summary Список адресов пользователя
+// @Description Возвращает адреса текущего авторизованного пользователя
+// @Tags addresses,jwt,user
+// @Produce json
+// @Success 200 {array} addresses.AddressResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /user/address [get]
 func (handler *AddressHandler) GetAllForUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email, _ := r.Context().Value(middleware.ContextEmailKey).(string)
@@ -73,6 +94,20 @@ func (handler *AddressHandler) GetAllForUser() http.HandlerFunc {
 	}
 }
 
+// Patch godoc
+// @Summary Обновить адрес
+// @Description Частичное обновление адреса (PATCH) — только владелец
+// @Tags addresses,jwt,user
+// @Accept json
+// @Produce json
+// @Param id path int true "ID адреса"
+// @Param request body addresses.AddressUpdateRequest true "Поля для обновления"
+// @Success 200 {object} addresses.AddressResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /user/address/{id} [patch]
 func (handler *AddressHandler) Patch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
@@ -110,6 +145,17 @@ func (handler *AddressHandler) Patch() http.HandlerFunc {
 	}
 }
 
+// Delete godoc
+// @Summary Удалить адрес
+// @Description Удаляет адрес (только владелец)
+// @Tags addresses,jwt,user
+// @Param id path int true "ID адреса"
+// @Success 204
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /user/address/{id} [delete]
 func (handler *AddressHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
@@ -143,6 +189,21 @@ func (handler *AddressHandler) Delete() http.HandlerFunc {
 
 }
 
+// AdminListAll godoc
+// @Summary Список адресов (админ)
+// @Description Возвращает список адресов c фильтрами (для админов)
+// @Tags addresses,admin
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Page size" default(10)
+// @Param user_id query int false "Filter by user id"
+// @Param city query string false "Filter by city"
+// @Param street query string false "Filter by street"
+// @Param phone query string false "Filter by phone"
+// @Param label query string false "Filter by label"
+// @Success 200 {object} addresses.AdminAddressesResponse
+// @Failure 500 {object} map[string]string
+// @Router /user/adminaddress [get]
 func (handler *AddressHandler) AdminListAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
